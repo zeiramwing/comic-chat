@@ -10,11 +10,15 @@
 //   * it is split into chunks if it is long (the original's "ForceFit" leftovers);
 //   * a chunk joins the current panel unless it must start a new one:
 //       - an action (narration box) always starts a new panel,
-//       - the speaker is already in the panel (one balloon per character),
+//       - the speaker is already in the panel, speaking or addressed (one
+//         appearance per character, like CPanel::AvatarInPanel),
 //       - the panel already holds MAX_BALLOONS balloons,
 //       - the cast would exceed MAX_CAST,
 //       - the balloons would no longer plausibly fit (LINE_BUDGET),
 //       - the entry changes the backdrop;
+//   * an "expression" (a character reacting with no words, the original's
+//     AddReaction) never adds a balloon: it joins the current panel and changes
+//     that character's pose, or starts a new panel if there is no room;
 //   * the cast of the panel (speakers plus anyone they address) is ordered
 //     left to right and given a facing direction with the original's greedy
 //     "who faces whom" penalty, remembering last panel's arrangement so
@@ -167,6 +171,13 @@ export class StripBuilder {
   push(entry) {
     this.lastCharacter.set(entry.userId, entry.character);
     this.names.set(entry.userId, entry.author);
+    if (entry.kind === 'expression') {
+      this.#addReaction({
+        entryId: entry.id, userId: entry.userId, author: entry.author, character: entry.character,
+        em: entry.em ?? { e: 0, i: 0 }, ts: entry.ts, backdrop: entry.backdrop ?? null,
+      });
+      return;
+    }
     const chunks = splitMessage(entry.text, entry.fmt, LIMITS.CHUNK_CHARS);
     chunks.forEach((chunk, ci) => {
       this.#addLine({
@@ -192,7 +203,7 @@ export class StripBuilder {
     if (!p) return true;
     if (line.kind === 'action') return true;
     if (p.lines.length >= LIMITS.MAX_BALLOONS) return true;
-    if (p.lines.some((l) => l.userId === line.userId)) return true;
+    if (p.cast.some((c) => c.userId === line.userId)) return true;
     if (line.backdrop && line.backdrop !== p.backdrop) return true;
     const cast = new Set(p.lines.map((l) => l.userId));
     cast.add(line.userId);
@@ -204,23 +215,37 @@ export class StripBuilder {
     return false;
   }
 
+  #newPanel(entryId) {
+    const panel = {
+      index: this.panels.length,
+      id: entryId,
+      seed: hash(entryId, this.panels.length),
+      backdrop: this.currentBackdrop,
+      lines: [],
+      reactions: [],
+      cast: [],
+    };
+    this.panels.push(panel);
+    return panel;
+  }
+
   #addLine(line) {
     if (line.backdrop) this.currentBackdrop = line.backdrop;
-    let panel;
-    if (this.#needsNewPanel(line)) {
-      panel = {
-        index: this.panels.length,
-        id: line.entryId,
-        seed: hash(line.entryId, this.panels.length),
-        backdrop: this.currentBackdrop,
-        lines: [],
-        cast: [],
-      };
-      this.panels.push(panel);
-    } else {
-      panel = this.last;
-    }
+    const panel = this.#needsNewPanel(line) ? this.#newPanel(line.entryId) : this.last;
     panel.lines.push(line);
+    this.#arrange(panel);
+  }
+
+  #addReaction(r) {
+    if (r.backdrop) this.currentBackdrop = r.backdrop;
+    const p = this.last;
+    const inCast = p?.cast.some((c) => c.userId === r.userId);
+    const roomFor = p && (inCast || p.cast.length < LIMITS.MAX_CAST);
+    const sameScene = !r.backdrop || r.backdrop === p?.backdrop;
+    const panel = roomFor && sameScene ? p : this.#newPanel(r.entryId);
+    // a later reaction by the same person replaces the earlier one
+    panel.reactions = panel.reactions.filter((x) => x.userId !== r.userId);
+    panel.reactions.push(r);
     this.#arrange(panel);
   }
 
@@ -236,6 +261,11 @@ export class StripBuilder {
       });
     }
     const speakers = new Set(records.map((r) => r.userId));
+    for (const r of panel.reactions) {
+      if (speakers.has(r.userId)) continue;
+      speakers.add(r.userId);
+      records.push({ userId: r.userId, character: r.character, requested: true, talkTos: [] });
+    }
     for (const l of panel.lines) {
       for (const t of l.to) {
         if (records.length >= LIMITS.MAX_CAST) break;

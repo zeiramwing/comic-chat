@@ -6,10 +6,8 @@
    "pack": "comicart",
    "type": "complex",
    "icon": {
-    "x": 183,
-    "y": 1057,
-    "w": 40,
-    "h": 40
+    "x": 0,
+    "y": 0
    }
   },
   {
@@ -18,10 +16,8 @@
    "pack": "comicart",
    "type": "complex",
    "icon": {
-    "x": 582,
-    "y": 646,
-    "w": 40,
-    "h": 40
+    "x": 40,
+    "y": 0
    }
   },
   {
@@ -30,10 +26,18 @@
    "pack": "comicart",
    "type": "complex",
    "icon": {
-    "x": 971,
-    "y": 1118,
-    "w": 40,
-    "h": 40
+    "x": 80,
+    "y": 0
+   }
+  },
+  {
+   "id": "bolo-artpack1",
+   "name": "Bolo (Art Pack 1)",
+   "pack": "artpack1",
+   "type": "complex",
+   "icon": {
+    "x": 40,
+    "y": 120
    }
   },
   {
@@ -42,10 +46,8 @@
    "pack": "comicart",
    "type": "complex",
    "icon": {
-    "x": 122,
-    "y": 556,
-    "w": 40,
-    "h": 40
+    "x": 120,
+    "y": 0
    }
   },
   {
@@ -54,10 +56,8 @@
    "pack": "comicart",
    "type": "simple",
    "icon": {
-    "x": 375,
-    "y": 858,
-    "w": 40,
-    "h": 40
+    "x": 160,
+    "y": 0
    }
   },
   {
@@ -66,10 +66,18 @@
    "pack": "comicart",
    "type": "complex",
    "icon": {
-    "x": 168,
-    "y": 1279,
-    "w": 40,
-    "h": 40
+    "x": 200,
+    "y": 0
+   }
+  },
+  {
+   "id": "cro-artpack1",
+   "name": "Cro (Art Pack 1)",
+   "pack": "artpack1",
+   "type": "complex",
+   "icon": {
+    "x": 80,
+    "y": 120
    }
   },
   {
@@ -78,10 +86,8 @@
    "pack": "comicart",
    "type": "complex",
    "icon": {
-    "x": 412,
-    "y": 756,
-    "w": 40,
-    "h": 40
+    "x": 240,
+    "y": 0
    }
   },
   {
@@ -90,10 +96,18 @@
    "pack": "comicart",
    "type": "complex",
    "icon": {
-    "x": 735,
-    "y": 925,
-    "w": 40,
-    "h": 40
+    "x": 280,
+    "y": 0
+   }
+  },
+  {
+   "id": "denise-artpack1",
+   "name": "Denise (Art Pack 1)",
+   "pack": "artpack1",
+   "type": "complex",
+   "icon": {
+    "x": 120,
+    "y": 120
    }
   },
   {
@@ -102,10 +116,8 @@
    "pack": "comicart",
    "type": "simple",
    "icon": {
-    "x": 226,
-    "y": 0,
-    "w": 40,
-    "h": 40
+    "x": 0,
+    "y": 40
    }
   },
   {
@@ -114,10 +126,8 @@
    "pack": "comicart",
    "type": "complex",
    "icon": {
-    "x": 722,
-    "y": 1282,
-    "w": 40,
-    "h": 40
+    "x": 40,
+    "y": 40
    }
   },
   {
@@ -126,214 +136,8 @@
    "pack": "comicart",
    "type": "simple",
    "icon": {
-    "x": 739,
-    "y": 916,
-    "w": 40,
-    "h": 40
-   }
-  },
-  {
-   "id": "kirby",
-   "name": "Kirby",
-   "pack": "comicart",
-   "type": "complex",
-   "icon": {
-    "x": 525,
-    "y": 450,
-    "w": 40,
-    "h": 40
-   }
-  },
-  {
-   "id": "lance",
-   "name": "Lance",
-   "pack": "comicart",
-   "type": "complex",
-   "icon": {
-    "x": 398,
-    "y": 948,
-    "w": 40,
-    "h": 40
-   }
-  },
-  {
-   "id": "lynnea",
-   "name": "Lynnea",
-   "pack": "comicart",
-   "type": "complex",
-   "icon": {
-    "x": 831,
-    "y": 1381,
-    "w": 40,
-    "h": 40
-   }
-  },
-  {
-   "id": "margaret",
-   "name": "Margaret",
-   "pack": "comicart",
-   "type": "complex",
-   "icon": {
-    "x": 142,
-    "y": 1049,
-    "w": 40,
-    "h": 40
-   }
-  },
-  {
-   "id": "mike",
-   "name": "Mike",
-   "pack": "comicart",
-   "type": "complex",
-   "icon": {
-    "x": 582,
-    "y": 813,
-    "w": 40,
-    "h": 40
-   }
-  },
-  {
-   "id": "pedagog",
-   "name": "Pedagogue",
-   "pack": "comicart",
-   "type": "simple",
-   "icon": {
-    "x": 175,
-    "y": 0,
-    "w": 40,
-    "h": 40
-   }
-  },
-  {
-   "id": "rainbow",
-   "name": "Rainbow",
-   "pack": "comicart",
-   "type": "simple",
-   "icon": {
-    "x": 242,
-    "y": 0,
-    "w": 40,
-    "h": 40
-   }
-  },
-  {
-   "id": "susan",
-   "name": "Susan",
-   "pack": "comicart",
-   "type": "complex",
-   "icon": {
-    "x": 655,
-    "y": 1514,
-    "w": 40,
-    "h": 40
-   }
-  },
-  {
-   "id": "tiki",
-   "name": "Tiki",
-   "pack": "comicart",
-   "type": "complex",
-   "icon": {
-    "x": 944,
-    "y": 810,
-    "w": 40,
-    "h": 40
-   }
-  },
-  {
-   "id": "tongtyed",
-   "name": "TongueTyed",
-   "pack": "comicart",
-   "type": "complex",
-   "icon": {
-    "x": 136,
-    "y": 1206,
-    "w": 40,
-    "h": 40
-   }
-  },
-  {
-   "id": "tux",
-   "name": "Tux",
-   "pack": "comicart",
-   "type": "simple",
-   "icon": {
-    "x": 169,
-    "y": 0,
-    "w": 40,
-    "h": 40
-   }
-  },
-  {
-   "id": "veronica",
-   "name": "Veronica",
-   "pack": "comicart",
-   "type": "complex",
-   "icon": {
-    "x": 244,
-    "y": 556,
-    "w": 40,
-    "h": 40
-   }
-  },
-  {
-   "id": "waf",
-   "name": "Waf",
-   "pack": "comicart",
-   "type": "simple",
-   "icon": {
-    "x": 210,
-    "y": 0,
-    "w": 40,
-    "h": 40
-   }
-  },
-  {
-   "id": "xeno",
-   "name": "Xeno",
-   "pack": "comicart",
-   "type": "complex",
-   "icon": {
-    "x": 758,
-    "y": 671,
-    "w": 40,
-    "h": 40
-   }
-  },
-  {
-   "id": "bolo-artpack1",
-   "name": "Bolo",
-   "pack": "artpack1",
-   "type": "complex",
-   "icon": {
-    "x": 971,
-    "y": 1118,
-    "w": 40,
-    "h": 40
-   }
-  },
-  {
-   "id": "cro-artpack1",
-   "name": "Cro",
-   "pack": "artpack1",
-   "type": "complex",
-   "icon": {
-    "x": 852,
-    "y": 1086,
-    "w": 40,
-    "h": 40
-   }
-  },
-  {
-   "id": "denise-artpack1",
-   "name": "Denise",
-   "pack": "artpack1",
-   "type": "complex",
-   "icon": {
-    "x": 443,
-    "y": 923,
-    "w": 40,
-    "h": 40
+    "x": 80,
+    "y": 40
    }
   },
   {
@@ -342,10 +146,18 @@
    "pack": "artpack1",
    "type": "complex",
    "icon": {
-    "x": 366,
-    "y": 913,
-    "w": 40,
-    "h": 40
+    "x": 160,
+    "y": 120
+   }
+  },
+  {
+   "id": "kirby",
+   "name": "Kirby",
+   "pack": "comicart",
+   "type": "complex",
+   "icon": {
+    "x": 120,
+    "y": 40
    }
   },
   {
@@ -354,22 +166,48 @@
    "pack": "artpack1",
    "type": "complex",
    "icon": {
-    "x": 890,
-    "y": 967,
-    "w": 40,
-    "h": 40
+    "x": 200,
+    "y": 120
+   }
+  },
+  {
+   "id": "lance",
+   "name": "Lance",
+   "pack": "comicart",
+   "type": "complex",
+   "icon": {
+    "x": 160,
+    "y": 40
+   }
+  },
+  {
+   "id": "lynnea",
+   "name": "Lynnea",
+   "pack": "comicart",
+   "type": "complex",
+   "icon": {
+    "x": 200,
+    "y": 40
    }
   },
   {
    "id": "lynnea-artpack1",
-   "name": "Lynnea",
+   "name": "Lynnea (Art Pack 1)",
    "pack": "artpack1",
    "type": "complex",
    "icon": {
-    "x": 133,
-    "y": 1371,
-    "w": 40,
-    "h": 40
+    "x": 240,
+    "y": 120
+   }
+  },
+  {
+   "id": "margaret",
+   "name": "Margaret",
+   "pack": "comicart",
+   "type": "complex",
+   "icon": {
+    "x": 240,
+    "y": 40
    }
   },
   {
@@ -378,10 +216,38 @@
    "pack": "artpack1",
    "type": "complex",
    "icon": {
-    "x": 376,
-    "y": 891,
-    "w": 40,
-    "h": 40
+    "x": 280,
+    "y": 120
+   }
+  },
+  {
+   "id": "mike",
+   "name": "Mike",
+   "pack": "comicart",
+   "type": "complex",
+   "icon": {
+    "x": 280,
+    "y": 40
+   }
+  },
+  {
+   "id": "pedagog",
+   "name": "Pedagogue",
+   "pack": "comicart",
+   "type": "simple",
+   "icon": {
+    "x": 0,
+    "y": 80
+   }
+  },
+  {
+   "id": "rainbow",
+   "name": "Rainbow",
+   "pack": "comicart",
+   "type": "simple",
+   "icon": {
+    "x": 40,
+    "y": 80
    }
   },
   {
@@ -390,10 +256,8 @@
    "pack": "artpack1",
    "type": "complex",
    "icon": {
-    "x": 966,
-    "y": 1215,
-    "w": 40,
-    "h": 40
+    "x": 0,
+    "y": 160
    }
   },
   {
@@ -402,10 +266,8 @@
    "pack": "artpack1",
    "type": "complex",
    "icon": {
-    "x": 234,
-    "y": 1158,
-    "w": 40,
-    "h": 40
+    "x": 40,
+    "y": 160
    }
   },
   {
@@ -414,10 +276,78 @@
    "pack": "artpack1",
    "type": "complex",
    "icon": {
-    "x": 803,
-    "y": 940,
-    "w": 40,
-    "h": 40
+    "x": 80,
+    "y": 160
+   }
+  },
+  {
+   "id": "susan",
+   "name": "Susan",
+   "pack": "comicart",
+   "type": "complex",
+   "icon": {
+    "x": 80,
+    "y": 80
+   }
+  },
+  {
+   "id": "tiki",
+   "name": "Tiki",
+   "pack": "comicart",
+   "type": "complex",
+   "icon": {
+    "x": 120,
+    "y": 80
+   }
+  },
+  {
+   "id": "tongtyed",
+   "name": "TongueTyed",
+   "pack": "comicart",
+   "type": "complex",
+   "icon": {
+    "x": 160,
+    "y": 80
+   }
+  },
+  {
+   "id": "tux",
+   "name": "Tux",
+   "pack": "comicart",
+   "type": "simple",
+   "icon": {
+    "x": 200,
+    "y": 80
+   }
+  },
+  {
+   "id": "veronica",
+   "name": "Veronica",
+   "pack": "comicart",
+   "type": "complex",
+   "icon": {
+    "x": 240,
+    "y": 80
+   }
+  },
+  {
+   "id": "waf",
+   "name": "Waf",
+   "pack": "comicart",
+   "type": "simple",
+   "icon": {
+    "x": 280,
+    "y": 80
+   }
+  },
+  {
+   "id": "xeno",
+   "name": "Xeno",
+   "pack": "comicart",
+   "type": "complex",
+   "icon": {
+    "x": 0,
+    "y": 120
    }
   }
  ],
@@ -508,6 +438,10 @@
    "w": 20,
    "h": 26,
    "count": 9
+  },
+  "icons": {
+   "file": "ui/icons.png",
+   "cell": 40
   }
  }
 }

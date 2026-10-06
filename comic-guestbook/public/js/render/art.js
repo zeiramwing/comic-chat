@@ -78,6 +78,33 @@ export class Art {
     return this.emotionImg;
   }
 
+  async icons() {
+    if (this.iconImg) return this.iconImg;
+    const meta = this.index?.ui?.icons;
+    if (!meta) return null;
+    this.iconImg = await loadImage(`${this.base}${meta.file}`);
+    return this.iconImg;
+  }
+
+  /** Source rectangle of a character's 40x40 icon in the shared sheet. */
+  iconRect(id) {
+    const c = this.index?.characters.find((x) => x.id === id);
+    const cell = this.index?.ui?.icons?.cell ?? 40;
+    return c?.icon ? { x: c.icon.x, y: c.icon.y, w: cell, h: cell } : null;
+  }
+
+  /** Draw a character icon into a canvas (used by menus, lists and pickers). */
+  drawIcon(canvas, id) {
+    const img = this.iconImg;
+    const r = this.iconRect(id);
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (img && r) {
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(img, r.x, r.y, r.w, r.h, 0, 0, canvas.width, canvas.height);
+    }
+  }
+
   /** Load everything a panel needs. */
   async ensurePanel(panel) {
     const ids = new Set(panel.cast.map((m) => m.character));

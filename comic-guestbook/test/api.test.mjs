@@ -87,7 +87,7 @@ test('login: right password works, wrong password and unknown user look identica
   assert.deepEqual(bad1.data, bad2.data);
   const ok = await c.post('/api/login', { username: 'Alice', password: 'wonderland1' });
   assert.equal(ok.status, 200);
-  assert.equal((await c.get('/api/me')).status, 200);
+  assert.equal((await c.get('/api/me')).data.user.display, 'Alice');
 });
 
 test('repeated failures lock a username out for a while', async () => {
@@ -103,12 +103,12 @@ test('repeated failures lock a username out for a while', async () => {
 test('logout ends the session', async () => {
   const c = mk('10.1.0.11');
   await c.post('/api/login', { username: 'alice', password: 'wonderland1' });
-  assert.equal((await c.get('/api/me')).status, 200);
+  assert.equal((await c.get('/api/me')).data.user.display, 'Alice');
   const old = c.cookie;
   await c.post('/api/logout', {});
-  assert.equal((await c.get('/api/me')).status, 401);
+  assert.equal((await c.get('/api/me')).data.user, null);
   c.cookie = old;
-  assert.equal((await c.get('/api/me')).status, 401, 'the old token no longer works');
+  assert.equal((await c.get('/api/me')).data.user, null, 'the old token no longer works');
 });
 
 test('posting requires sign-in', async () => {
@@ -130,6 +130,17 @@ test('entries are validated', async () => {
     const r = await alice.post('/api/entries', b);
     assert.equal(r.status, 400, JSON.stringify(b).slice(0, 80));
   }
+});
+
+test('a wordless expression needs an emotion and stores no text', async () => {
+  let r = await alice.post('/api/entries', { kind: 'expression', character: 'anna' });
+  assert.equal(r.status, 400);
+  r = await alice.post('/api/entries', { kind: 'expression', character: 'anna', em: { e: 3.927, i: 0.9 }, text: 'ignored words' });
+  assert.equal(r.status, 201, JSON.stringify(r.data));
+  assert.equal(r.data.entry.kind, 'expression');
+  assert.equal(r.data.entry.text, '', 'text is discarded');
+  assert.deepEqual(r.data.entry.em, { e: 3.927, i: 0.9 });
+  assert.equal(r.data.entry.fmt, null);
 });
 
 test('a good entry is stored and returned', async () => {
@@ -154,22 +165,26 @@ test('entries list in order with paging in both directions', async () => {
     assert.equal(r.status, 201, JSON.stringify(r.data));
   }
   const all = (await alice.get('/api/entries?limit=100')).data;
-  assert.equal(all.entries.length, 8);
+  assert.ok(all.entries.length >= 8);
   const ids = all.entries.map((e) => e.id);
   assert.deepEqual(ids, [...ids].sort((a, b) => a - b));
 
-  const p1 = (await alice.get('/api/entries?limit=3')).data;
-  assert.equal(p1.entries.length, 3);
-  assert.equal(p1.more, true);
-  const p2 = (await alice.get(`/api/entries?limit=3&after=${p1.entries.at(-1).id}`)).data;
-  assert.deepEqual(p2.entries.map((e) => e.id), ids.slice(3, 6));
-  const p3 = (await alice.get(`/api/entries?limit=3&after=${p2.entries.at(-1).id}`)).data;
-  assert.equal(p3.more, false);
-  assert.deepEqual([...p1.entries, ...p2.entries, ...p3.entries].map((e) => e.id), ids);
+  // walking forward three at a time visits every entry exactly once, in order
+  const walked = [];
+  let after = 0;
+  for (let guard = 0; guard < 50; guard++) {
+    const page = (await alice.get(`/api/entries?limit=3&after=${after}`)).data;
+    assert.ok(page.entries.length <= 3);
+    walked.push(...page.entries.map((e) => e.id));
+    if (!page.more) break;
+    after = page.entries.at(-1).id;
+  }
+  assert.deepEqual(walked, ids);
 
+  // walking backward from the end
   const older = (await alice.get(`/api/entries?limit=3&before=${ids.at(-1)}`)).data;
   assert.deepEqual(older.entries.map((e) => e.id), ids.slice(-4, -1));
-  assert.equal(older.more, true);
+  assert.equal(older.more, ids.length - 1 > 3);
   assert.equal((await alice.get('/api/entries?limit=abc')).status, 400);
 });
 
@@ -266,11 +281,11 @@ test('changing a password signs out other sessions', async () => {
   const b = mk('10.1.0.31');
   await a.post('/api/register', { username: 'dana', password: 'oldpassword1', display: 'Dana' });
   await b.post('/api/login', { username: 'dana', password: 'oldpassword1' });
-  assert.equal((await b.get('/api/me')).status, 200);
+  assert.equal((await b.get('/api/me')).data.user.display, 'Dana');
   assert.equal((await a.post('/api/me/password', { oldPassword: 'wrong', newPassword: 'newpassword1' })).status, 401);
   assert.equal((await a.post('/api/me/password', { oldPassword: 'oldpassword1', newPassword: 'newpassword1' })).status, 200);
-  assert.equal((await b.get('/api/me')).status, 401, 'other session ended');
-  assert.equal((await a.get('/api/me')).status, 200, 'this session continues');
+  assert.equal((await b.get('/api/me')).data.user, null, 'other session ended');
+  assert.equal((await a.get('/api/me')).data.user.display, 'Dana', 'this session continues');
   assert.equal((await mk('10.1.0.32').post('/api/login', { username: 'dana', password: 'oldpassword1' })).status, 401);
   assert.equal((await mk('10.1.0.33').post('/api/login', { username: 'dana', password: 'newpassword1' })).status, 200);
 });
@@ -281,7 +296,7 @@ test('closing an account anonymises it and keeps the strip intact', async () => 
   await c.post('/api/entries', entry({ text: 'I was here' }));
   assert.equal((await c.del('/api/me', { password: 'wrong' })).status, 401);
   assert.equal((await c.del('/api/me', { password: 'leaving1234' })).status, 200);
-  assert.equal((await c.get('/api/me')).status, 401);
+  assert.equal((await c.get('/api/me')).data.user, null);
   assert.equal((await mk('10.1.0.41').post('/api/login', { username: 'leaver', password: 'leaving1234' })).status, 401);
   const list = (await alice.get('/api/entries?limit=1000')).data.entries;
   const left = list.find((e) => e.text === 'I was here');

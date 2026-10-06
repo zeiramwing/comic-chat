@@ -46,7 +46,7 @@ export interface EntryRow {
   character: string;
   emotion: number | null;
   intensity: number | null;
-  kind: 'say' | 'think' | 'action' | 'whisper';
+  kind: 'say' | 'think' | 'action' | 'whisper' | 'expression';
   text: string;
   fmt: string | null;
   backdrop: string | null;

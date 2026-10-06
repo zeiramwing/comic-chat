@@ -171,3 +171,17 @@ test('unknown characters are reported missing instead of crashing', () => {
   assert.equal(s.members[0].missing, true);
   assert.equal(s.balloons.length, 1);
 });
+
+test('a wordless reaction changes the pose and adds no balloon', () => {
+  const entries = [e(1, 'hello'), e(1, '', { kind: 'expression', em: { e: 0, i: 1 } })];
+  const panels = buildPanels(entries);
+  assert.equal(panels.length, 1);
+  const s = buildScene(panels[0], { characters: chars, measure });
+  assert.equal(s.balloons.length, 1);
+  const plain = scene([e(1, 'hello')]);
+  const key = (x) => x.members[0].parts.map((p) => p.key).join();
+  const smiling = buildScene(buildPanels([{ ...entries[1], id: 99 }])[0], { characters: chars, measure });
+  assert.ok(key(s) && key(plain));
+  assert.equal(smiling.balloons.length, 0);
+  assert.equal(smiling.members.length, 1);
+});

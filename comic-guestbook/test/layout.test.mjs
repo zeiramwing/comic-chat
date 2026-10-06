@@ -148,3 +148,52 @@ test('prng and hash are stable', () => {
   assert.equal(hash('a', 1), hash('a', 1));
   assert.notEqual(hash('a', 1), hash('a', 2));
 });
+
+// ---- expressions (wordless reactions) -----------------------------------
+
+const expr = (userId, em = { e: 0, i: 1 }, extra = {}) => e(userId, '', { kind: 'expression', em, ...extra });
+
+test('an expression adds no balloon and changes the speaker pose in the same panel', () => {
+  const p = buildPanels([e(1, 'hi'), expr(1, { e: 3.14, i: 1 })]);
+  assert.equal(p.length, 1);
+  assert.equal(p[0].lines.length, 1);
+  assert.equal(p[0].reactions.length, 1);
+  assert.equal(p[0].cast.length, 1);
+});
+
+test('an expression by someone new brings them into the panel', () => {
+  const p = buildPanels([e(1, 'hi'), expr(2)]);
+  assert.equal(p.length, 1);
+  assert.deepEqual(p[0].cast.map((c) => c.userId).sort(), [1, 2]);
+  assert.equal(p[0].lines.length, 1);
+});
+
+test('a lone expression starts a panel with no balloons', () => {
+  const p = buildPanels([expr(1)]);
+  assert.equal(p.length, 1);
+  assert.equal(p[0].lines.length, 0);
+  assert.equal(p[0].cast.length, 1);
+});
+
+test('a later reaction by the same person replaces the earlier one', () => {
+  const p = buildPanels([e(1, 'hi'), expr(1, { e: 1, i: 1 }), expr(1, { e: 2, i: 1 })]);
+  assert.equal(p[0].reactions.length, 1);
+  assert.equal(p[0].reactions[0].em.e, 2);
+});
+
+test('a full panel pushes a new person’s expression onto a new panel', () => {
+  const p = buildPanels([e(1, 'a'), e(2, 'b'), e(3, 'c'), e(4, 'd'), e(5, 'e'), expr(6)]);
+  assert.equal(p.length, 2);
+  assert.equal(p[1].cast[0].userId, 6);
+});
+
+test('someone who reacted cannot also speak in the same panel (they are already in it)', () => {
+  const p = buildPanels([expr(1), e(1, 'now I speak')]);
+  assert.equal(p.length, 2);
+});
+
+test('people who were only addressed also start a new panel when they speak', () => {
+  const p = buildPanels([e(2, 'x'), e(2, 'y'), e(3, 'z'), e(3, 'w'), e(1, 'hey', { to: [2] }), e(2, 'hi back')]);
+  const last = p.at(-1);
+  assert.deepEqual(last.lines.map((l) => l.userId), [2]);
+});

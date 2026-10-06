@@ -1,7 +1,7 @@
 import type { Env, UserRow } from '../types.ts';
 import { fail, json, readJson, sessionCookie, clearCookie, getCookie } from '../lib/http.ts';
 import { hashPassword, verifyPassword } from '../lib/crypto.ts';
-import { createSession, destroySession, destroyAllSessions, requireUser, SESSION_SECONDS } from '../lib/auth.ts';
+import { createSession, destroySession, destroyAllSessions, requireUser, currentUser, SESSION_SECONDS } from '../lib/auth.ts';
 import { hit, count, clientKey } from '../lib/ratelimit.ts';
 import { artIndex } from '../lib/art.ts';
 import * as v from '../lib/validate.ts';
@@ -101,9 +101,10 @@ export async function logout(env: Env, request: Request): Promise<Response> {
   return json({ ok: true }, { headers: { 'set-cookie': clearCookie(request) } });
 }
 
+/** Who am I? Signed-out visitors get { user: null } (not a 401) so the page loads quietly. */
 export async function me(env: Env, request: Request): Promise<Response> {
-  const u = await requireUser(env, request);
-  return json({ user: userDTO(u) });
+  const u = await currentUser(env, request);
+  return json({ user: u ? userDTO(u) : null });
 }
 
 export async function updateMe(env: Env, request: Request): Promise<Response> {

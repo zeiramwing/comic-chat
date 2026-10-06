@@ -68,7 +68,9 @@ export function characterGeometry(av, pick) {
 }
 
 function choosePose(av, member, line, ctx, panel) {
-  const start = hash(line ? line.entryId : panel.id, member.userId) % 97;
+  const reaction = panel.reactions?.find((r) => r.userId === member.userId);
+  const start = hash(line ? line.entryId : reaction ? reaction.entryId : panel.id, member.userId) % 97;
+  if (reaction) return bodyFromEmotion(av, reaction.em, start); // a wordless reaction wins
   if (!line) return neutralBody(av, start); // addressed but silent: neutral
   if (line.em) return bodyFromEmotion(av, line.em, start);
   if (ctx.autoExpressions === false) return neutralBody(av, start);

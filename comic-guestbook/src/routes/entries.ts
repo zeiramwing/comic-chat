@@ -67,10 +67,14 @@ export async function create(env: Env, request: Request): Promise<Response> {
   await hit(env, `post-day:${user.id}`, Number(env.POST_LIMIT_PER_DAY) || 300, 86400);
 
   const body = await readJson(request);
-  const text = unwrap(v.messageText(body.text));
-  const fmt = unwrap(v.fmt(body.fmt, text.length));
   const kind = unwrap(v.kind(body.kind));
   const em = unwrap(v.emotion(body.em));
+  // An expression is your character reacting with no words: it needs an
+  // explicit emotion and carries no text.
+  const isExpression = kind === 'expression';
+  if (isExpression && !em) throw fail(400, 'invalid', 'an expression needs an emotion');
+  const text = isExpression ? '' : unwrap(v.messageText(body.text));
+  const fmt = isExpression ? null : unwrap(v.fmt(body.fmt, text.length));
   const to = unwrap(v.toIds(body.to));
 
   const art = await artIndex(env, request.url);

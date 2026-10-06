@@ -55,8 +55,8 @@ CREATE TABLE entries (
   character   TEXT    NOT NULL,
   emotion     REAL,                                       -- NULL = choose from the text at render time
   intensity   REAL,
-  kind        TEXT    NOT NULL DEFAULT 'say' CHECK (kind IN ('say', 'think', 'action', 'whisper')),
-  text        TEXT    NOT NULL,
+  kind        TEXT    NOT NULL DEFAULT 'say' CHECK (kind IN ('say', 'think', 'action', 'whisper', 'expression')),
+  text        TEXT    NOT NULL,                           -- empty for 'expression'
   fmt         TEXT,                                       -- JSON formatting runs, NULL if plain
   backdrop    TEXT,                                       -- scene change, NULL = keep
   to_ids      TEXT,                                       -- JSON array of user ids addressed

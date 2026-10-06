@@ -83,6 +83,7 @@ function blit(dst, dw, src, sw, sh, ox, oy) {
 }
 
 const round3 = (n) => Math.round(n * 1000) / 1000;
+const ICON = 40; // character icons are 40x40
 
 export function convertAvatar(buf, id, pack) {
   const av = parseAvb(buf);
@@ -156,8 +157,10 @@ export function convertAvatar(buf, id, pack) {
     }));
     meta.torsos = av.torsos.map((r) => ({ p: `t${r.poseId}`, ...em(r), cx: r.xCX, cy: r.yCX }));
   }
+  const iconSprite = baked.find((b) => b.key === meta.icon);
   return {
     meta,
+    iconRGBA: iconSprite && iconSprite.w === ICON && iconSprite.h === ICON ? iconSprite.ink : null,
     inkPng: encodeRGBA(packed.w, packed.h, inkAtlas),
     haloPng: hasHalo ? encodeRGBA(packed.w, packed.h, haloAtlas) : null,
   };
@@ -235,6 +238,7 @@ function main() {
 
   const characters = [];
   const backdrops = [];
+  const iconPixels = []; // { id, rgba(40*40*4) } for the shared icon sheet
   const seen = new Set();
   const files = inputs.flatMap(walk)
     .filter((f) => /\.(avb|bgb)$/i.test(f) && !f.includes(`${path.sep}archive${path.sep}`));
@@ -257,11 +261,8 @@ function main() {
         fs.writeFileSync(path.join(charDir, r.meta.atlas), r.inkPng);
         if (r.haloPng) fs.writeFileSync(path.join(charDir, r.meta.halo), r.haloPng);
         fs.writeFileSync(path.join(charDir, `${id}.json`), JSON.stringify(r.meta));
-        const [x, y, w, h] = r.meta.sprites[r.meta.icon] ?? [0, 0, 0, 0];
-        characters.push({
-          id, name: r.meta.name, pack, type: r.meta.type,
-          icon: { x, y, w, h },
-        });
+        if (r.iconRGBA) iconPixels.push({ id, rgba: r.iconRGBA });
+        characters.push({ id, name: r.meta.name, pack, type: r.meta.type });
         bytes += r.inkPng.length + (r.haloPng?.length ?? 0);
       }
     } catch (e) {
@@ -275,6 +276,28 @@ function main() {
     fs.mkdirSync(path.join(out, 'ui'), { recursive: true });
     fs.writeFileSync(path.join(out, 'ui', 'emotions.png'), e.png);
     ui.emotions = { file: 'ui/emotions.png', w: e.w, h: e.h, count: e.count };
+  }
+  // Art Pack 1 re-draws a few of the original characters; tell them apart.
+  const names = new Map();
+  for (const c of characters) names.set(c.name, (names.get(c.name) ?? 0) + 1);
+  for (const c of characters) if (names.get(c.name) > 1 && c.pack === 'artpack1') c.name = `${c.name} (Art Pack 1)`;
+  characters.sort((a, b) => a.name.localeCompare(b.name));
+  if (iconPixels.length) {
+    const cols = 8;
+    const rows = Math.ceil(iconPixels.length / cols);
+    const sheet = new Uint8Array(cols * ICON * rows * ICON * 4);
+    iconPixels.forEach((ic, k) => {
+      const ox = (k % cols) * ICON;
+      const oy = Math.floor(k / cols) * ICON;
+      for (let y = 0; y < ICON; y++) {
+        sheet.set(ic.rgba.subarray(y * ICON * 4, (y + 1) * ICON * 4), ((oy + y) * cols * ICON + ox) * 4);
+      }
+      const c = characters.find((x) => x.id === ic.id);
+      c.icon = { x: ox, y: oy };
+    });
+    fs.mkdirSync(path.join(out, 'ui'), { recursive: true });
+    fs.writeFileSync(path.join(out, 'ui', 'icons.png'), encodeRGBA(cols * ICON, rows * ICON, sheet));
+    ui.icons = { file: 'ui/icons.png', cell: ICON };
   }
   fs.writeFileSync(path.join(out, 'index.json'), JSON.stringify({ characters, backdrops, ui }, null, 1));
   console.log(`${characters.length} characters, ${backdrops.length} backdrops, ${(bytes / 1024).toFixed(0)} KiB of PNG -> ${out}`);

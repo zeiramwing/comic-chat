@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Comic Guestbook</title>
+  <meta name="description" content="A guestbook where every entry becomes a panel in one never-ending comic strip.">
+  <meta name="theme-color" content="#008080">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <noscript><p class="noscript">Comic Guestbook draws its comic strip in your browser, so it needs JavaScript turned on.</p></noscript>
+
+  <div id="app" class="window" hidden>
+    <header class="titlebar">
+      <span class="title"><img src="/favicon.svg" alt="" width="16" height="16"> <span id="site-title">Comic Guestbook</span></span>
+      <span id="whoami" class="whoami"></span>
+    </header>
+
+    <nav id="menubar" class="menubar" aria-label="Main menu"></nav>
+    <div id="toolbar" class="toolbar" role="toolbar" aria-label="Toolbar"></div>
+
+    <main id="main" class="main">
+      <section id="strip-pane" class="strip-pane" aria-label="Comic strip">
+        <div id="motd" class="motd" hidden></div>
+        <div id="strip" class="strip" tabindex="0"></div>
+        <div id="textlog" class="textlog" tabindex="0" hidden></div>
+        <button id="jump-new" class="jump-new" hidden>New entries ▼</button>
+      </section>
+      <aside id="side" class="side" aria-label="People and expression">
+        <button id="side-back" class="side-back" type="button">← Back to the comic</button>
+        <div id="members" class="members"></div>
+        <div id="bodycam" class="bodycam"></div>
+      </aside>
+    </main>
+
+    <form id="saybar" class="saybar" autocomplete="off"></form>
+    <footer id="statusbar" class="statusbar" role="status"></footer>
+  </div>
+
+  <div id="loading" class="loading">
+    <div class="loading-box">
+      <div class="spinner" aria-hidden="true"></div>
+      <p id="loading-text">Drawing the first panel…</p>
+    </div>
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

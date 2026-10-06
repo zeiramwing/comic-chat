@@ -91,12 +91,12 @@ export function messageText(v: unknown): Result<string> {
   return ok(s);
 }
 
-export type Kind = 'say' | 'think' | 'action' | 'whisper';
+export type Kind = 'say' | 'think' | 'action' | 'whisper' | 'expression';
 export function kind(v: unknown, allowWhisper = false): Result<Kind> {
   if (v === undefined) return ok('say');
-  if (v === 'say' || v === 'think' || v === 'action') return ok(v);
+  if (v === 'say' || v === 'think' || v === 'action' || v === 'expression') return ok(v);
   if (v === 'whisper' && allowWhisper) return ok(v);
-  return bad('kind must be say, think or action');
+  return bad('kind must be say, think, action or expression');
 }
 
 /** An explicit emotion from the wheel: e is radians (or a gesture code), i is 0..1. */
