@@ -217,7 +217,8 @@ function drawNameTag(ctx, m) {
   ctx.strokeStyle = INK;
   ctx.lineWidth = 1.6;
   ctx.beginPath();
-  ctx.roundRect(x, y, w, px + 10, 8);
+  if (ctx.roundRect) ctx.roundRect(x, y, w, px + 10, 8);
+  else ctx.rect(x, y, w, px + 10); // older browsers: square corners
   ctx.fill();
   ctx.stroke();
   ctx.fillStyle = INK;

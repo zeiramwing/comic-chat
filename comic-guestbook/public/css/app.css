@@ -311,13 +311,14 @@ dialog {
   box-shadow: var(--bevel-out), 4px 4px 0 rgba(0, 0, 0, .4);
   padding: 3px;
   max-width: min(94vw, 720px);
+  max-height: 92vh;
   max-height: 92dvh;
   width: auto;
 }
 dialog::backdrop { background: rgba(0, 64, 64, .45); }
 dialog .dlg-title { background: linear-gradient(90deg, var(--title-a), var(--title-b)); color: #fff; font-weight: 700; padding: 3px 6px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 dialog .dlg-title button { padding: 0 6px; min-height: 18px; line-height: 1; }
-dialog .dlg-body { padding: 10px 12px; overflow: auto; max-height: calc(92dvh - 90px); min-width: min(88vw, 340px); }
+dialog .dlg-body { padding: 10px 12px; overflow: auto; max-height: calc(92vh - 90px); max-height: calc(92dvh - 90px); min-width: min(88vw, 340px); }
 dialog .dlg-actions { display: flex; gap: 6px; justify-content: flex-end; padding: 6px 10px 10px; }
 dialog .dlg-actions button { min-width: 78px; }
 .form-grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; }

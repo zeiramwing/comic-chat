@@ -45,7 +45,8 @@ const cache = new Map();
 
 /** measure(flags, px, text) for wrapText. Cached; px is in layout units. */
 export function measure(flags, px, text) {
-  if (!mctx) mctx = new OffscreenCanvas(8, 8).getContext('2d');
+  // OffscreenCanvas is missing from older Safari; a detached <canvas> works everywhere.
+  if (!mctx) mctx = (typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(8, 8) : document.createElement('canvas')).getContext('2d');
   // Measure at a fixed large size and scale: stable across zoom levels.
   const key = `${flags & 25}|${text}`;
   let w = cache.get(key);
