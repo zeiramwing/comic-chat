@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "comic-guestbook",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-09-01",
+
+  // Static site (the comic strip UI + converted art). Only /api/* runs the Worker.
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "comic-guestbook",
+      // Replace with the id printed by `npx wrangler d1 create comic-guestbook`.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  "vars": {
+    // The account with this username becomes the owner (moderator). If left
+    // empty, the FIRST account to register becomes the owner.
+    "OWNER_USERNAME": "",
+    "SITE_NAME": "Comic Guestbook"
+  }
+
+  // Serve it on your own domain (the zone must be on your Cloudflare account):
+  // , "routes": [{ "pattern": "guestbook.example.com", "custom_domain": true }]
+}
