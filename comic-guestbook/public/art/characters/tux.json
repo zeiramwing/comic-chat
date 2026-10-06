@@ -1,0 +1,1 @@
+{"id":"tux","name":"Tux","pack":"comicart","type":"simple","flags":0,"copyright":"Copyright © 1996, 1997, 1998 Microsoft Corporation\\nJim Woodring","atlas":"tux.png","halo":"tux.halo.png","size":[211,393],"icon":"i1","sprites":{"b2":[0,0,167,393],"i1":[169,0,40,40]},"bodies":[{"p":"b2","e":0,"i":0,"fx":104,"fy":78}]}

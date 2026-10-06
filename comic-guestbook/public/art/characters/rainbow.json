@@ -1,0 +1,1 @@
+{"id":"rainbow","name":"Rainbow","pack":"comicart","type":"simple","flags":5,"copyright":"Copyright © 1996, 1997, 1998 Microsoft Corporation\\nJim Woodring","atlas":"rainbow.png","halo":"rainbow.halo.png","size":[284,346],"icon":"i1","sprites":{"b2":[0,0,240,346],"i1":[242,0,40,40]},"bodies":[{"p":"b2","e":0,"i":0,"fx":153,"fy":149}]}

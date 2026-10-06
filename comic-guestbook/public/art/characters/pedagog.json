@@ -1,0 +1,1 @@
+{"id":"pedagog","name":"Pedagogue","pack":"comicart","type":"simple","flags":5,"copyright":"Copyright © 1996, 1997, 1998 Microsoft Corporation\\nJim Woodring","atlas":"pedagog.png","halo":"pedagog.halo.png","size":[217,397],"icon":"i1","sprites":{"b2":[0,0,173,397],"i1":[175,0,40,40]},"bodies":[{"p":"b2","e":0,"i":0,"fx":113,"fy":82}]}

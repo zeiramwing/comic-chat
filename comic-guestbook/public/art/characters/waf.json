@@ -1,0 +1,1 @@
+{"id":"waf","name":"Waf","pack":"comicart","type":"simple","flags":5,"copyright":"Copyright © 1996, 1997, 1998 Microsoft Corporation\\nJim Woodring","atlas":"waf.png","halo":"waf.halo.png","size":[252,367],"icon":"i1","sprites":{"b2":[0,0,208,367],"i1":[210,0,40,40]},"bodies":[{"p":"b2","e":0,"i":0,"fx":158,"fy":85}]}

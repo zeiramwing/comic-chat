@@ -1,0 +1,1 @@
+{"id":"glenda","name":"Greg","pack":"comicart","type":"simple","flags":0,"copyright":"Copyright © 1996, 1997, 1998 Microsoft Corporation\\nJim Woodring","atlas":"glenda.png","halo":"glenda.halo.png","size":[268,387],"icon":"i1","sprites":{"b2":[0,0,224,387],"i1":[226,0,40,40]},"bodies":[{"p":"b2","e":0,"i":0,"fx":152,"fy":70}]}
