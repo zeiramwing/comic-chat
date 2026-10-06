@@ -23,7 +23,13 @@ export class Art {
   async init() {
     const res = await fetch(`${this.base}index.json`);
     this.index = await res.json();
+    this.v = this.index.version ? `?v=${this.index.version}` : '';
     return this.index;
+  }
+
+  /** URL of an art file; the version makes it safe to cache for a long time. */
+  url(path) {
+    return `${this.base}${path}${this.v ?? ''}`;
   }
 
   once(key, fn) {
@@ -38,10 +44,10 @@ export class Art {
     if (this.atlases.has(id) || this.failed.has(id)) return Promise.resolve(this.atlases.get(id) ?? null);
     return this.once(`c:${id}`, async () => {
       try {
-        const m = await (await fetch(`${this.base}characters/${id}.json`)).json();
+        const m = await (await fetch(this.url(`characters/${id}.json`))).json();
         const [ink, halo] = await Promise.all([
-          loadImage(`${this.base}characters/${m.atlas}`),
-          m.halo ? loadImage(`${this.base}characters/${m.halo}`) : null,
+          loadImage(this.url(`characters/${m.atlas}`)),
+          m.halo ? loadImage(this.url(`characters/${m.halo}`)) : null,
         ]);
         this.manifests.set(id, m);
         const entry = { ink, halo };
@@ -61,7 +67,7 @@ export class Art {
       try {
         const meta = this.index.backdrops.find((b) => b.id === id);
         if (!meta) return null;
-        const img = await loadImage(`${this.base}backdrops/${meta.file}`);
+        const img = await loadImage(this.url(`backdrops/${meta.file}`));
         this.backdrops.set(id, img);
         return img;
       } catch {
@@ -74,7 +80,7 @@ export class Art {
     if (this.emotionImg) return this.emotionImg;
     const meta = this.index?.ui?.emotions;
     if (!meta) return null;
-    this.emotionImg = await loadImage(`${this.base}${meta.file}`);
+    this.emotionImg = await loadImage(this.url(meta.file));
     return this.emotionImg;
   }
 
@@ -82,7 +88,7 @@ export class Art {
     if (this.iconImg) return this.iconImg;
     const meta = this.index?.ui?.icons;
     if (!meta) return null;
-    this.iconImg = await loadImage(`${this.base}${meta.file}`);
+    this.iconImg = await loadImage(this.url(meta.file));
     return this.iconImg;
   }
 

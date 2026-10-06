@@ -9,6 +9,8 @@ export async function createSession(env: Env, userId: number): Promise<string> {
   const now = Date.now();
   await env.DB.prepare('INSERT INTO sessions (token_hash, user_id, created_at, expires_at) VALUES (?1, ?2, ?3, ?4)')
     .bind(await sha256Hex(token), userId, now, now + SESSION_SECONDS * 1000).run();
+  // Housekeeping: drop expired sessions now and then.
+  if (Math.random() < 0.05) await env.DB.prepare('DELETE FROM sessions WHERE expires_at < ?1').bind(now).run();
   return token;
 }
 

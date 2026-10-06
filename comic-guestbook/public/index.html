@@ -19,7 +19,7 @@
     </header>
 
     <nav id="menubar" class="menubar" aria-label="Main menu"></nav>
-    <div id="toolbar" class="toolbar" role="toolbar" aria-label="Toolbar"></div>
+    <div class="toolwrap" role="region" aria-label="Toolbar"><div id="toolbar" class="toolbar" role="toolbar" aria-label="Toolbar"></div></div>
 
     <main id="main" class="main">
       <section id="strip-pane" class="strip-pane" aria-label="Comic strip">
@@ -35,8 +35,8 @@
       </aside>
     </main>
 
-    <form id="saybar" class="saybar" autocomplete="off"></form>
-    <footer id="statusbar" class="statusbar" role="status"></footer>
+    <form id="saybar" class="saybar" autocomplete="off" aria-label="Sign the guestbook"></form>
+    <footer id="statusbar" class="statusbar"></footer>
   </div>
 
   <div id="loading" class="loading">

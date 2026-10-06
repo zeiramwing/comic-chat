@@ -203,7 +203,7 @@ export class Toolbar {
   render() {
     const p = state.prefs;
     const btn = (icon, label, title, onclick, pressed, cls = '') => h('button', {
-      type: 'button', title, 'aria-label': title, class: cls, 'aria-pressed': pressed === undefined ? null : String(pressed), onclick,
+      type: 'button', title, class: cls, 'aria-pressed': pressed === undefined ? null : String(pressed), onclick,
     }, h('span.ico', { 'aria-hidden': 'true' }, icon), h('span.label', label));
     this.el.hidden = !p.showToolbar;
     this.el.replaceChildren(

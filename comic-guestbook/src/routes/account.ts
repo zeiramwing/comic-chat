@@ -1,6 +1,6 @@
 import type { Env, UserRow } from '../types.ts';
 import { fail, json, readJson, sessionCookie, clearCookie, getCookie } from '../lib/http.ts';
-import { hashPassword, verifyPassword } from '../lib/crypto.ts';
+import { hashPassword, verifyPassword, timingSafeEqual } from '../lib/crypto.ts';
 import { createSession, destroySession, destroyAllSessions, requireUser, currentUser, SESSION_SECONDS } from '../lib/auth.ts';
 import { hit, count, clientKey } from '../lib/ratelimit.ts';
 import { artIndex } from '../lib/art.ts';
@@ -50,12 +50,30 @@ export async function register(env: Env, request: Request): Promise<Response> {
   const rec = await hashPassword(password);
   const now = Date.now();
   const ownerName = (env.OWNER_USERNAME ?? '').trim().toLowerCase();
+
+  // Optional hardening: with OWNER_SETUP_TOKEN set (a Wrangler secret), the
+  // owner account can only be created by someone who knows it, so nobody can
+  // claim the owner name in the window between deploying and registering.
+  // The token travels as `ownerToken` (the page reads it from #setup=…).
+  const setupToken = env.OWNER_SETUP_TOKEN ?? '';
+  let mayBeOwner = true;
+  if (setupToken) {
+    const given = typeof body.ownerToken === 'string' ? body.ownerToken : '';
+    mayBeOwner = timingSafeEqual(new TextEncoder().encode(given), new TextEncoder().encode(setupToken));
+    if (!mayBeOwner) {
+      const users = await env.DB.prepare('SELECT COUNT(*) AS n FROM users').first<{ n: number }>();
+      if (!ownerName && (users?.n ?? 0) === 0) throw fail(403, 'not_set_up', 'this guestbook has not been set up yet');
+      if (ownerName && username.toLowerCase() === ownerName) throw fail(403, 'owner_reserved', 'that username is reserved');
+    }
+  }
   // The very first account (when no OWNER_USERNAME is configured) or the
   // configured owner becomes the owner. Decided inside the INSERT so two
   // simultaneous first registrations cannot both win.
-  const roleSql = ownerName
-    ? "CASE WHEN lower(?1) = ?2 THEN 'owner' ELSE 'member' END"
-    : "CASE WHEN (SELECT COUNT(*) FROM users) = 0 THEN 'owner' ELSE 'member' END";
+  const roleSql = !mayBeOwner
+    ? "'member'"
+    : ownerName
+      ? "CASE WHEN lower(?1) = ?2 THEN 'owner' ELSE 'member' END"
+      : "CASE WHEN (SELECT COUNT(*) FROM users) = 0 THEN 'owner' ELSE 'member' END";
   let row: UserRow | null;
   try {
     const stmt = env.DB.prepare(
@@ -81,13 +99,19 @@ export async function login(env: Env, request: Request): Promise<Response> {
   const name = typeof body.username === 'string' ? body.username.trim().toLowerCase().slice(0, 64) : '';
   const pass = typeof body.password === 'string' ? body.password.slice(0, 200) : '';
   if (!name || !pass) throw fail(400, 'invalid', 'username and password are required');
-  if ((await count(env, `login-fail:${name}`, 900)) >= 8) throw fail(429, 'rate_limited', 'too many failed attempts, wait a few minutes');
+  // Failures are counted per username AND address, so one attacker cannot lock
+  // a victim out from everyone else's address; a very high per-username ceiling
+  // still slows a distributed guesser.
+  if ((await count(env, `login-fail:${name}:${ip}`, 900)) >= 8 || (await count(env, `login-fail:${name}`, 900)) >= 60) {
+    throw fail(429, 'rate_limited', 'too many failed attempts, wait a few minutes');
+  }
 
   const row = await env.DB.prepare('SELECT * FROM users WHERE username = ?1').bind(name).first<UserRow>();
   dummy ??= hashPassword('not-a-real-password');
   const rec = row ? { hash: row.pass_hash, salt: row.pass_salt, iter: row.pass_iter } : await dummy;
   const good = await verifyPassword(pass, rec);
   if (!row || !good) {
+    await hit(env, `login-fail:${name}:${ip}`, 1000, 900);
     await hit(env, `login-fail:${name}`, 1000, 900);
     throw fail(401, 'bad_credentials', 'wrong username or password');
   }

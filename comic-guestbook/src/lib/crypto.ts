@@ -61,3 +61,16 @@ export async function sha256Hex(text: string): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', enc.encode(text));
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
+
+/** A readable temporary password (no look-alike characters), e.g. for owner-issued resets. */
+export function temporaryPassword(length = 12): string {
+  const alphabet = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = crypto.getRandomValues(new Uint8Array(length * 2));
+  let out = '';
+  for (const b of bytes) {
+    if (b >= 256 - (256 % alphabet.length)) continue; // avoid modulo bias
+    out += alphabet[b % alphabet.length];
+    if (out.length === length) break;
+  }
+  return out.length === length ? out : temporaryPassword(length);
+}

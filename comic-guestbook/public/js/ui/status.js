@@ -5,7 +5,7 @@ import { emotionLabel } from '../shared/emotion.js';
 export class StatusBar {
   constructor(el) {
     this.el = el;
-    this.msg = h('span', 'Ready');
+    this.msg = h('span', { role: 'status', 'aria-live': 'polite' }, 'Ready');
     this.count = h('span');
     this.members = h('span');
     this.net = h('span');

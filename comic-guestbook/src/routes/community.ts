@@ -2,6 +2,8 @@ import type { Env, RoomRow, UserRow } from '../types.ts';
 import { fail, json, readJson, intParam } from '../lib/http.ts';
 import { currentUser, requireOwner } from '../lib/auth.ts';
 import { artIndex } from '../lib/art.ts';
+import { hashPassword, temporaryPassword } from '../lib/crypto.ts';
+import { hit } from '../lib/ratelimit.ts';
 import * as v from '../lib/validate.ts';
 
 const unwrap = <T>(r: v.Result<T>): T => {
@@ -117,6 +119,30 @@ export async function ban(env: Env, request: Request, ban: boolean): Promise<Res
     }
   }
   return json({ ok: true });
+}
+
+/**
+ * No email, so account recovery goes through the owner: issue a one-time
+ * temporary password, sign the member out everywhere, and show it to the
+ * owner once. The member then changes it from Member → My profile.
+ */
+export async function resetPassword(env: Env, request: Request): Promise<Response> {
+  const owner = await requireOwner(env, request);
+  await hit(env, `reset:${owner.id}`, 20, 3600);
+  const body = await readJson(request);
+  const id = Number(body.userId);
+  if (!Number.isInteger(id) || id <= 0) throw fail(400, 'invalid', 'userId required');
+  const target = await env.DB.prepare('SELECT id, role, display_name, pass_hash FROM users WHERE id = ?1')
+    .bind(id).first<{ id: number; role: string; display_name: string; pass_hash: string }>();
+  if (!target || !target.pass_hash) throw fail(404, 'not_found', 'no such member');
+  if (target.role === 'owner') throw fail(400, 'invalid', 'use “Change password” for your own account');
+  const password = temporaryPassword();
+  const rec = await hashPassword(password);
+  await env.DB.batch([
+    env.DB.prepare('UPDATE users SET pass_hash = ?1, pass_salt = ?2, pass_iter = ?3 WHERE id = ?4').bind(rec.hash, rec.salt, rec.iter, id),
+    env.DB.prepare('DELETE FROM sessions WHERE user_id = ?1').bind(id),
+  ]);
+  return json({ password, name: target.display_name });
 }
 
 export async function ping(): Promise<Response> {

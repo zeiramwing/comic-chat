@@ -2,6 +2,8 @@ export interface Env {
   DB: D1Database;
   ASSETS: Fetcher;
   OWNER_USERNAME?: string;
+  /** Secret: when set, only a request carrying it can create the owner account. */
+  OWNER_SETUP_TOKEN?: string;
   SITE_NAME?: string;
   /** Per-user posting limits; defaults 12 per minute and 300 per day. */
   POST_LIMIT_PER_MIN?: string;

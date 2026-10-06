@@ -23,6 +23,7 @@ export const LIMITS = {
   HOMEPAGE_MAX: 200,
   PREFS_MAX_BYTES: 16 * 1024,
   TO_MAX: 4,
+  LINKS_MAX: 3,
 } as const;
 
 export function username(v: unknown): Result<string> {
@@ -88,6 +89,8 @@ export function messageText(v: unknown): Result<string> {
   if (!s) return bad('text is empty');
   if (s.length > LIMITS.TEXT_MAX) return bad(`text must be at most ${LIMITS.TEXT_MAX} characters`);
   if (s.split('\n').length > LIMITS.TEXT_LINES_MAX) return bad(`text may have at most ${LIMITS.TEXT_LINES_MAX} lines`);
+  // a cheap guard against link spam
+  if ((s.match(/https?:\/\//gi) ?? []).length > LIMITS.LINKS_MAX) return bad(`please keep it to ${LIMITS.LINKS_MAX} links or fewer`);
   return ok(s);
 }
 

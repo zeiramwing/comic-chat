@@ -25,6 +25,8 @@
     // The account with this username becomes the owner (moderator). If left
     // empty, the FIRST account to register becomes the owner.
     "OWNER_USERNAME": "",
+    // Also set the secret OWNER_SETUP_TOKEN (`npx wrangler secret put OWNER_SETUP_TOKEN`)
+    // so nobody can claim the owner account before you do; see README.
     "SITE_NAME": "Comic Guestbook"
   }
 

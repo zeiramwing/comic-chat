@@ -20,6 +20,8 @@ export const fail = (status: number, code: string, message?: string) => new Http
 export async function readJson(request: Request): Promise<Record<string, unknown>> {
   const type = request.headers.get('content-type') ?? '';
   if (!type.toLowerCase().startsWith('application/json')) throw fail(415, 'unsupported_media_type', 'send application/json');
+  const declared = Number(request.headers.get('content-length') ?? 0);
+  if (declared > 64 * 1024) throw fail(413, 'too_large', 'request body is too large');
   const text = await request.text();
   if (text.length > 64 * 1024) throw fail(413, 'too_large', 'request body is too large');
   try {

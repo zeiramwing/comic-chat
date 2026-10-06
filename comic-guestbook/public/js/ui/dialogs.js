@@ -2,10 +2,10 @@
 
 import { h, formatTime, ago } from '../lib/dom.js';
 import { state, bus, isOwner, isFavorite, isIgnored } from '../state.js';
-import { get, patch } from '../api.js';
+import { get, patch, post } from '../api.js';
 import { setPrefs } from '../prefs.js';
 import { loadRoom, rebuild } from '../data.js';
-import { openDialog } from './dialog.js';
+import { openDialog, confirmDialog } from './dialog.js';
 import { ignoreUser, setFavorite, banMember, unbanMember } from '../actions.js';
 import { HELP } from '../commands.js';
 import { linkify } from './textview.js';
@@ -87,6 +87,9 @@ export function openUserList(art) {
           ? h('button', { type: 'button', onclick: () => { setFavorite(u.id, false); draw(); } }, '★')
           : h('button', { type: 'button', title: 'Add to favorites', onclick: () => { setFavorite(u.id, true); draw(); } }, '☆'),
         isOwner() && !u.owner && u.id !== state.me?.id
+          ? h('button', { type: 'button', title: 'Issue a temporary password', onclick: () => resetPasswordFor(u) }, 'Reset password')
+          : null,
+        isOwner() && !u.owner && u.id !== state.me?.id
           ? (u.banned
             ? h('button', { type: 'button', onclick: async () => { await unbanMember(u.id); draw(); } }, 'Unban')
             : h('button.danger', { type: 'button', onclick: async () => { await banMember(u.id); draw(); } }, 'Ban'))
@@ -97,6 +100,21 @@ export function openUserList(art) {
   search.addEventListener('input', draw);
   draw();
   openDialog({ title: `User list (${state.users.size})`, body: h('div', search, holder), actions: [{ label: 'Close', primary: true, onclick: (c) => c() }] });
+}
+
+async function resetPasswordFor(u) {
+  if (!(await confirmDialog(`Issue ${u.name} a temporary password? They will be signed out everywhere.`, { yes: 'Issue password' }))) return;
+  try {
+    const r = await post('/api/admin/reset-password', { userId: u.id });
+    openDialog({
+      title: 'Temporary password',
+      body: h('div',
+        h('p', `Give this to ${r.name} in person or over a private channel. It is shown only once.`),
+        h('p', h('code', { class: 'temp-pass' }, r.password)),
+        h('p.hint', 'They can change it from Member → My profile after signing in.')),
+      actions: [{ label: 'Done', primary: true, onclick: (c) => c() }],
+    });
+  } catch (e) { toast(e.message, true); }
 }
 
 export function openFavorites(art) {

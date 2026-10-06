@@ -32,6 +32,7 @@ const routes: Route[] = [
   { method: 'GET', pattern: /^\/api\/users\/(\d+)$/, handler: (e, r, p) => community.userProfile(e, r, Number(p[0])) },
   { method: 'POST', pattern: /^\/api\/admin\/ban$/, handler: (e, r) => community.ban(e, r, true) },
   { method: 'POST', pattern: /^\/api\/admin\/unban$/, handler: (e, r) => community.ban(e, r, false) },
+  { method: 'POST', pattern: /^\/api\/admin\/reset-password$/, handler: (e, r) => community.resetPassword(e, r) },
 
   { method: 'GET', pattern: /^\/api\/ping$/, handler: () => community.ping() },
   { method: 'GET', pattern: /^\/api\/version$/, handler: (e) => community.version(e) },

@@ -58,6 +58,9 @@ export function openAuth(mode = 'login') {
       const reg = current === 'register';
       const payload = { username: username.value.trim(), password: password.value };
       if (reg) {
+        // https://your.site/#setup=SECRET lets the owner account be created
+        const setup = /[#&]setup=([^&]+)/.exec(location.hash);
+        if (setup) payload.ownerToken = decodeURIComponent(setup[1]);
         payload.display = display.value.trim() || username.value.trim();
         const c = state.composer.character;
         if (c) payload.character = c;

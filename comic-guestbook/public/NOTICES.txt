@@ -1,0 +1,50 @@
+Comic Guestbook — third-party notices
+======================================
+
+1. Microsoft Comic Chat art and source
+--------------------------------------
+The characters (public/art/characters), backdrops (public/art/backdrops) and
+the emotion-wheel face icons (public/art/ui) are converted from files in
+Microsoft's open-source Comic Chat repository
+(https://github.com/microsoft/comic-chat). The character files carry the
+embedded notice:
+
+    Copyright (c) 1996, 1997, 1998 Microsoft Corporation
+    Jim Woodring
+
+The repository is published under this license:
+
+MIT License
+
+Copyright (c) Microsoft Corporation.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+The panel layout, emotion and text-expression rules, and automation vocabulary
+in public/js/shared are ported from that repository's C++ source
+(v2.5-beta-1-modern). This project is not affiliated with or endorsed by
+Microsoft. "Microsoft" and "Comic Chat" are trademarks of Microsoft Corporation.
+
+Check that these terms suit your own use before publishing a site that
+includes the art; to avoid the question entirely, run tools/convert-art.mjs on
+art you own and delete public/art.
+
+2. Comic Neue
+-------------
+public/fonts/comic-neue-*.woff2 — Copyright 2014 The Comic Neue Project
+Authors (https://github.com/crozynski/comicneue), licensed under the SIL Open
+Font License 1.1. See public/fonts/OFL-ComicNeue.txt.

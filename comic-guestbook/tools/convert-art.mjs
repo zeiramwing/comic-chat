@@ -14,6 +14,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import {
   parseAvb, decodePose, decodeBackdrop, decodeBmpAt, emotionFromRaw, AT, FLAG,
@@ -299,7 +300,12 @@ function main() {
     fs.writeFileSync(path.join(out, 'ui', 'icons.png'), encodeRGBA(cols * ICON, rows * ICON, sheet));
     ui.icons = { file: 'ui/icons.png', cell: ICON };
   }
-  fs.writeFileSync(path.join(out, 'index.json'), JSON.stringify({ characters, backdrops, ui }, null, 1));
+  // A content hash of every generated file, used as ?v= on art URLs so they can
+  // be cached for a year and still update the moment the art changes.
+  const hash = crypto.createHash('sha1');
+  for (const f of walk(out).sort()) hash.update(path.relative(out, f)).update(fs.readFileSync(f));
+  const version = hash.digest('hex').slice(0, 10);
+  fs.writeFileSync(path.join(out, 'index.json'), JSON.stringify({ version, characters, backdrops, ui }, null, 1));
   console.log(`${characters.length} characters, ${backdrops.length} backdrops, ${(bytes / 1024).toFixed(0)} KiB of PNG -> ${out}`);
 }
 

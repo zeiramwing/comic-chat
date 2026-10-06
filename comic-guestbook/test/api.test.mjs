@@ -100,6 +100,24 @@ test('repeated failures lock a username out for a while', async () => {
   assert.equal(other.status, 200);
 });
 
+test('failed logins are counted per address, so a stranger cannot lock you out', async () => {
+  const victim = mk('10.1.7.1');
+  await victim.post('/api/register', { username: 'victim', password: 'rightpassword1', display: 'Victim' });
+  const attacker = mk('10.1.7.2');
+  let last;
+  for (let i = 0; i < 10; i++) last = await attacker.post('/api/login', { username: 'victim', password: 'guess-guess-guess' });
+  assert.equal(last.status, 429, 'the attacker is locked out');
+  assert.equal((await attacker.post('/api/login', { username: 'victim', password: 'rightpassword1' })).status, 429, 'even with the right password, from that address');
+  const home = mk('10.1.7.3');
+  assert.equal((await home.post('/api/login', { username: 'victim', password: 'rightpassword1' })).status, 200, 'the real owner of the account is unaffected');
+});
+
+test('oversized request bodies are refused', async () => {
+  const c = mk('10.1.7.9');
+  const r = await c.post('/api/login', { username: 'x', password: 'y'.repeat(70 * 1024) });
+  assert.equal(r.status, 413);
+});
+
 test('logout ends the session', async () => {
   const c = mk('10.1.0.11');
   await c.post('/api/login', { username: 'alice', password: 'wonderland1' });
@@ -305,6 +323,34 @@ test('closing an account anonymises it and keeps the strip intact', async () => 
   const names = (await alice.get('/api/users')).data.users.map((u) => u.name);
   assert.ok(!names.some((n) => n.startsWith('Departed')));
   assert.equal((await owner.del('/api/me', { password: 'correct horse' })).status, 400, 'owner cannot close');
+});
+
+test('too many links in one entry is refused', async () => {
+  const many = 'a http://x.example b https://y.example c http://z.example d https://w.example';
+  const r = await alice.post('/api/entries', entry({ text: many }));
+  assert.equal(r.status, 400);
+  assert.match(r.data.message, /links/);
+  const ok = await alice.post('/api/entries', entry({ text: 'one link https://example.com is fine' }));
+  assert.equal(ok.status, 201);
+});
+
+test('the owner can issue a temporary password; nobody else can', async () => {
+  const eve = mk('10.1.0.60');
+  const reg = await eve.post('/api/register', { username: 'eve', password: 'forgotten123', display: 'Eve' });
+  const eveId = reg.data.user.id;
+  assert.equal((await alice.post('/api/admin/reset-password', { userId: eveId })).status, 403);
+  const ownerId = (await owner.get('/api/me')).data.user.id;
+  assert.equal((await owner.post('/api/admin/reset-password', { userId: ownerId })).status, 400);
+  assert.equal((await owner.post('/api/admin/reset-password', { userId: 99999 })).status, 404);
+
+  const r = await owner.post('/api/admin/reset-password', { userId: eveId });
+  assert.equal(r.status, 200);
+  assert.match(r.data.password, /^[A-Za-z0-9]{12}$/);
+  assert.equal((await eve.get('/api/me')).data.user, null, 'her old session ended');
+  assert.equal((await mk('10.1.0.61').post('/api/login', { username: 'eve', password: 'forgotten123' })).status, 401);
+  const back = mk('10.1.0.62');
+  assert.equal((await back.post('/api/login', { username: 'eve', password: r.data.password })).status, 200);
+  assert.equal((await back.post('/api/me/password', { oldPassword: r.data.password, newPassword: 'brand-new-pass1' })).status, 200);
 });
 
 test('unknown endpoints and methods are handled', async () => {

@@ -44,7 +44,7 @@ export function openBackdropPicker(art) {
     grid.append(h('button', {
       type: 'button', disabled: !allowed, title: b.name, 'aria-pressed': String(state.composer.backdrop === b.id),
       onclick: () => pick(b.id),
-    }, h('img', { src: `/art/backdrops/${b.file}`, alt: '', width: 90, height: 90, loading: 'lazy' }), h('span', b.name)));
+    }, h('img', { src: art.url(`backdrops/${b.file}`), alt: '', width: 90, height: 90, loading: 'lazy' }), h('span', b.name)));
   }
   dlg = openDialog({
     title: 'Start a new scene',

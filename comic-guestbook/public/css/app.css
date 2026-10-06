@@ -289,7 +289,7 @@ kbd { background: #fff; padding: 0 4px; box-shadow: var(--bevel-out); font-size:
 .saybar .compose { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px; align-items: stretch; }
 .saybar .sendcol { display: grid; gap: 3px; grid-template-columns: repeat(3, auto); }
 .saybar .sendcol button { min-width: 62px; }
-.saybar .counter { font-size: 11px; color: #555; margin-left: auto; }
+.saybar .counter { font-size: 11px; color: #333; margin-left: auto; }
 .saybar .counter.over { color: var(--danger); font-weight: 700; }
 .saybar .chip { display: inline-flex; align-items: center; gap: 2px; background: #fff; box-shadow: var(--field); padding: 0 2px 0 6px; }
 .saybar .chip button { box-shadow: none; background: none; min-height: 0; padding: 0 4px; }
@@ -419,3 +419,5 @@ dialog .dlg-actions button { min-width: 78px; }
 
 .main.no-side { grid-template-columns: minmax(0, 1fr); }
 .main.no-side .side { display: none; }
+
+.temp-pass { font: 700 18px/1.4 'Courier New', monospace; background: #fff; padding: 4px 10px; box-shadow: var(--field); user-select: all; }

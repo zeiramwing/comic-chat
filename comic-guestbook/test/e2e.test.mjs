@@ -90,6 +90,12 @@ test('the page loads quietly: no console errors, strict security headers', opts,
   const csp = res.headers()['content-security-policy'];
   assert.ok(csp && csp.includes("script-src 'self'") && csp.includes("frame-ancestors 'none'"), `csp: ${csp}`);
   assert.equal(res.headers()['x-content-type-options'], 'nosniff');
+  // Content-hashed art is cached for a year; the index that carries the hash is not.
+  const png = await page.request.get(`${server.base}/art/characters/anna.png`);
+  assert.match(png.headers()['cache-control'] ?? '', /immutable/);
+  const index = await page.request.get(`${server.base}/art/index.json`);
+  assert.doesNotMatch(index.headers()['cache-control'] ?? '', /immutable/);
+  assert.match((await index.json()).version, /^[0-9a-f]{10}$/);
   assert.deepEqual(problems, []);
   await ctx.close();
 });
@@ -216,12 +222,12 @@ test('formatting buttons, shortcuts and the character counter', opts, async () =
 test('the plain-text view mirrors the strip and highlights mentions', opts, async () => {
   await seeded.bob.client.post('/api/entries', { text: `hey @Cathy are you there?`, character: 'bolo' });
   const { page, ctx } = await open('cathy');
-  await page.click('.toolbar button[aria-label="Plain text view"]');
+  await page.click('.toolbar button[title="Plain text view"]');
   await page.waitForSelector('#textlog .line');
   const mention = page.locator('#textlog .line', { hasText: 'are you there' });
   assert.ok((await mention.getAttribute('class')).includes('hl'));
   assert.equal(await page.isHidden('#strip'), true);
-  await page.click('.toolbar button[aria-label="Comic strip view"]');
+  await page.click('.toolbar button[title="Comic strip view"]');
   assert.equal(await page.isVisible('#strip'), true);
   await ctx.close();
 });
@@ -394,7 +400,7 @@ test('phone layout: no sideways scroll, burger menu, member overlay and back but
   await page.click('.menu-burger');
   assert.equal(await page.isVisible('.menubar .menu-btn:has-text("File")'), true);
   await page.click('.menu-burger');
-  await page.click('.toolbar button[aria-label="Show or hide the member list"]');
+  await page.click('.toolbar button[title="Show or hide the member list"]');
   assert.equal(await page.isVisible('.members'), true);
   await page.click('#side-back');
   assert.equal(await page.isVisible('.members'), false);
@@ -408,4 +414,36 @@ test('no unexpected console errors were produced by any of the above', opts, asy
   // comes from the deliberate offline test.
   const meaningful = problems.filter((p) => !/status of 4\d\d|ERR_INTERNET_DISCONNECTED/.test(p));
   assert.deepEqual(meaningful, []);
+});
+
+test('accessibility: axe finds no violations on the main screens', opts, async () => {
+  const axeSrc = fs.readFileSync(new URL('../node_modules/axe-core/axe.min.js', import.meta.url), 'utf8');
+  const run = async (page, label) => {
+    await page.evaluate(axeSrc);
+    const r = await page.evaluate(async () => (await axe.run(document, { resultTypes: ['violations'] })).violations
+      .map((v) => `${v.impact} ${v.id}: ${v.nodes[0].target.join(' ')}`));
+    assert.deepEqual(r, [], label);
+  };
+  const out = await open(null);
+  await run(out.page, 'signed out');
+  await out.page.click('button:has-text("Sign in")');
+  await out.page.waitForSelector('dialog');
+  await run(out.page, 'sign-in dialog');
+  await out.ctx.close();
+
+  const { page, ctx } = await open('host');
+  await page.waitForSelector('.panel canvas');
+  await run(page, 'signed in');
+  await page.click('.menu-btn:has-text("View")');
+  await run(page, 'menu open');
+  await page.keyboard.press('Escape');
+  for (const [label, sel] of [['options', '.toolbar button[title="Options"]'], ['character picker', '.saybar .charbtn'], ['help', '.toolbar button[title="Help"]']]) {
+    await page.click(sel);
+    await page.waitForSelector('dialog');
+    await run(page, label);
+    await page.keyboard.press('Escape');
+  }
+  await page.click('.toolbar button[title="Plain text view"]');
+  await run(page, 'text view');
+  await ctx.close();
 });

@@ -66,10 +66,13 @@ CREATE TABLE entries (
 CREATE INDEX entries_room_id ON entries(room_id, id);
 CREATE INDEX entries_user ON entries(user_id, id);
 
--- Tiny fixed-window counters for rate limiting.
+-- Tiny fixed-window counters for rate limiting. `exp` is when the window ends
+-- (unix seconds), so rows of every window size can be pruned with one rule.
 CREATE TABLE rate (
   k       TEXT    NOT NULL,
   window  INTEGER NOT NULL,
   n       INTEGER NOT NULL,
+  exp     INTEGER NOT NULL,
   PRIMARY KEY (k, window)
 );
+CREATE INDEX rate_exp ON rate(exp);

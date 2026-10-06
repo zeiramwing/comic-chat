@@ -38,3 +38,23 @@ test('registration is limited per address', async () => {
   const other = new Client(server.base, '10.2.0.3');
   assert.equal((await other.post('/api/register', { username: 'someoneelse', password: 'passw0rd!!', display: 'Else' })).status, 201);
 });
+
+test('long-window counters survive pruning of short windows (daily post limit holds)', async () => {
+  // Regression: pruning used to compare window indexes across window sizes and
+  // could delete live hourly/daily counters, silently disabling those limits.
+  const sec = Math.floor(Date.now() / 1000) % 86400;
+  if (sec < 600 || sec > 86400 - 600) return; // too close to the daily window rollover to assert exactly
+  const own = await startServer({ vars: { POST_LIMIT_PER_MIN: 100000, POST_LIMIT_PER_DAY: 100 } });
+  try {
+    const c = new Client(own.base, '10.2.1.1');
+    assert.equal((await c.post('/api/register', { username: 'daily', password: 'passw0rd!!', display: 'Daily' })).status, 201);
+    let ok = 0;
+    for (let i = 0; i < 160; i++) {
+      const r = await c.post('/api/entries', { text: `msg ${i}`, character: 'anna' });
+      if (r.status === 201) ok++;
+    }
+    assert.equal(ok, 100, `the daily limit of 100 should hold across ~3 prune passes, got ${ok}`);
+  } finally {
+    own.stop();
+  }
+});
