@@ -147,3 +147,55 @@ export function cleanFmt(fmt, textLength) {
 export function stripMarkup(src) {
   return parseMarkup(src).text;
 }
+
+/** Slice a fmt array to the character range [from, to). Returns null if plain. */
+export function sliceFmt(fmt, from, to) {
+  if (!fmt) return null;
+  const out = [];
+  let pos = 0;
+  for (const [len, flags, color] of fmt) {
+    const a = Math.max(from, pos);
+    const b = Math.min(to, pos + len);
+    if (b > a) {
+      const last = out[out.length - 1];
+      if (last && last[1] === flags && last[2] === color) last[0] += b - a;
+      else out.push([b - a, flags, color]);
+    }
+    pos += len;
+  }
+  return out.every(([, f, c]) => f === 0 && !c) ? null : out;
+}
+
+/**
+ * Split a long message into chunks of at most maxChars, preferring sentence
+ * ends, then spaces. A chunk keeps its formatting. Never returns an empty list.
+ */
+export function splitMessage(text, fmt, maxChars) {
+  if (text.length <= maxChars) return [{ text, fmt: fmt ?? null }];
+  const chunks = [];
+  let start = 0;
+  while (start < text.length) {
+    if (text.length - start <= maxChars) {
+      chunks.push([start, text.length]);
+      break;
+    }
+    const window = text.slice(start, start + maxChars + 1);
+    let cut = -1;
+    // last sentence end in the back half of the window
+    const re = /[.!?]["')\]]*\s/g;
+    for (let m = re.exec(window); m; m = re.exec(window)) {
+      if (m.index + m[0].length > maxChars * 0.4) cut = m.index + m[0].length;
+    }
+    if (cut < 0) cut = window.lastIndexOf(' ', maxChars);
+    if (cut <= 0) cut = maxChars; // one enormous word
+    chunks.push([start, start + cut]);
+    start += cut;
+  }
+  return chunks.map(([a, b]) => {
+    // trim whitespace at the seam but keep fmt aligned to the trimmed range
+    let s = a, e = b;
+    while (s < e && /\s/.test(text[s])) s++;
+    while (e > s && /\s/.test(text[e - 1])) e--;
+    return { text: text.slice(s, e), fmt: sliceFmt(fmt, s, e) };
+  }).filter((c) => c.text.length > 0);
+}

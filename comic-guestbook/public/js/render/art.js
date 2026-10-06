@@ -1,0 +1,86 @@
+// Loads converted Comic Chat art on demand and caches it.
+
+const loadImage = (url) => new Promise((resolve, reject) => {
+  const img = new Image();
+  img.decoding = 'async';
+  img.onload = () => resolve(img);
+  img.onerror = () => reject(new Error(`failed to load ${url}`));
+  img.src = url;
+});
+
+export class Art {
+  constructor(base = '/art/') {
+    this.base = base;
+    this.index = null;
+    this.manifests = new Map(); // id -> character manifest (what buildScene wants)
+    this.atlases = new Map(); // id -> { ink, halo }
+    this.backdrops = new Map(); // id -> Image
+    this.pending = new Map();
+    this.emotionImg = null;
+    this.failed = new Set();
+  }
+
+  async init() {
+    const res = await fetch(`${this.base}index.json`);
+    this.index = await res.json();
+    return this.index;
+  }
+
+  once(key, fn) {
+    if (!this.pending.has(key)) {
+      this.pending.set(key, fn().finally(() => this.pending.delete(key)));
+    }
+    return this.pending.get(key);
+  }
+
+  /** Make sure a character's manifest and atlases are ready. Never throws. */
+  character(id) {
+    if (this.atlases.has(id) || this.failed.has(id)) return Promise.resolve(this.atlases.get(id) ?? null);
+    return this.once(`c:${id}`, async () => {
+      try {
+        const m = await (await fetch(`${this.base}characters/${id}.json`)).json();
+        const [ink, halo] = await Promise.all([
+          loadImage(`${this.base}characters/${m.atlas}`),
+          m.halo ? loadImage(`${this.base}characters/${m.halo}`) : null,
+        ]);
+        this.manifests.set(id, m);
+        const entry = { ink, halo };
+        this.atlases.set(id, entry);
+        return entry;
+      } catch {
+        this.failed.add(id);
+        return null;
+      }
+    });
+  }
+
+  backdrop(id) {
+    if (!id) return Promise.resolve(null);
+    if (this.backdrops.has(id)) return Promise.resolve(this.backdrops.get(id));
+    return this.once(`b:${id}`, async () => {
+      try {
+        const meta = this.index.backdrops.find((b) => b.id === id);
+        if (!meta) return null;
+        const img = await loadImage(`${this.base}backdrops/${meta.file}`);
+        this.backdrops.set(id, img);
+        return img;
+      } catch {
+        return null;
+      }
+    });
+  }
+
+  async emotions() {
+    if (this.emotionImg) return this.emotionImg;
+    const meta = this.index?.ui?.emotions;
+    if (!meta) return null;
+    this.emotionImg = await loadImage(`${this.base}${meta.file}`);
+    return this.emotionImg;
+  }
+
+  /** Load everything a panel needs. */
+  async ensurePanel(panel) {
+    const ids = new Set(panel.cast.map((m) => m.character));
+    await Promise.all([...[...ids].map((id) => this.character(id)), this.backdrop(panel.backdrop)]);
+  }
+}

@@ -1,0 +1,60 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Render harness</title>
+<style>
+  body { margin: 12px; background: #c8c8c8; font: 14px sans-serif; }
+  #strip { display: grid; grid-template-columns: repeat(3, 360px); gap: 10px; }
+  canvas { width: 360px; height: 360px; background: #fff; }
+</style>
+<div id="strip"></div>
+<script type="module">
+import { Art } from '/js/render/art.js';
+import { loadFonts, measure } from '/js/render/fonts.js';
+import { drawScene } from '/js/render/draw.js';
+import { buildPanels } from '/js/shared/layout.js';
+import { buildScene } from '/js/shared/scene.js';
+import { parseMarkup } from '/js/shared/richtext.js';
+
+const params = new URLSearchParams(location.search);
+const S = Number(params.get('size') || 360);
+document.getElementById('strip').style.gridTemplateColumns = `repeat(3, ${S}px)`;
+
+await loadFonts();
+const art = new Art('/art/');
+await art.init();
+
+let id = 1;
+const mk = (userId, character, text, extra = {}) => {
+  const r = parseMarkup(text);
+  return { id: id++, userId, author: extra.author ?? character, character, em: null, kind: 'say',
+    text: r.text, fmt: r.fmt, backdrop: null, to: [], ts: id, ...extra };
+};
+const entries = [
+  mk(1, 'anna', 'Hi everyone! Welcome to the guestbook.', { backdrop: 'pastoral', author: 'Anna' }),
+  mk(2, 'bolo', "Hello Anna! [b]Great[/b] to be here. I [i]really[/i] like the new look.", { author: 'Bolo', to: [1] }),
+  mk(3, 'cro', 'lol this is amazing :)', { author: 'Cro' }),
+  mk(1, 'anna', 'I think so too. Does anybody know how long a message can be before it gets split across a few panels, because I would love to test that?', { author: 'Anna' }),
+  mk(4, 'denise', 'WHAT IS GOING ON!!!', { author: 'Denise', backdrop: 'space' }),
+  mk(5, 'xeno', 'Maybe the aliens know.', { kind: 'think', author: 'Xeno' }),
+  mk(6, 'kirby', 'psst, come closer', { kind: 'whisper', author: 'Kirby' }),
+  mk(3, 'cro', 'dances a little jig', { kind: 'action', author: 'Cro', backdrop: 'field' }),
+  mk(2, 'bolo', '[color=#cc0000]Red[/color], [u]underlined[/u] and [fixed]fixed pitch[/fixed] and [sym]symbol[/sym].', { author: 'Bolo' }),
+  mk(7, 'tux', 'A simple one-pose character speaks up.', { author: 'Tux' }),
+  mk(8, 'jordan', 'And so does a tall one with a lot more to say than anybody expected from such a thin person.', { author: 'Jordan' }),
+  mk(9, 'susan', 'Bye now!', { author: 'Susan', em: { e: 3.927, i: 0.9 } }),
+];
+const panels = buildPanels(entries, { defaultBackdrop: 'pastoral' });
+const strip = document.getElementById('strip');
+const dpr = 2;
+for (const panel of panels) {
+  await art.ensurePanel(panel);
+  const scene = buildScene(panel, { characters: art.manifests, measure });
+  const c = document.createElement('canvas');
+  c.width = c.height = S * dpr;
+  const ctx = c.getContext('2d');
+  ctx.scale((S * dpr) / 1000, (S * dpr) / 1000);
+  drawScene(ctx, scene, { backdrop: art.backdrops.get(panel.backdrop) ?? null, atlases: art.atlases }, { names: true });
+  strip.append(c);
+}
+window.__done = panels.length;
+</script>

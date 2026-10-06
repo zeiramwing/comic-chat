@@ -54,3 +54,39 @@ test('cleanFmt rejects bad input', () => {
   assert.equal(cleanFmt('x', 3), null);
   assert.equal(cleanFmt(null, 3), null);
 });
+
+import { splitMessage, sliceFmt } from '../public/js/shared/richtext.js';
+
+test('short messages are not split', () => {
+  assert.deepEqual(splitMessage('hello', null, 50), [{ text: 'hello', fmt: null }]);
+});
+
+test('long messages split at sentence ends, then spaces', () => {
+  const text = 'First sentence is here. Second sentence follows on. Third one closes it out.';
+  const parts = splitMessage(text, null, 40);
+  assert.ok(parts.length >= 2);
+  assert.ok(parts.every((p) => p.text.length <= 40));
+  assert.equal(parts.map((p) => p.text).join(' '), text);
+  assert.ok(parts[0].text.endsWith('.'));
+});
+
+test('an enormous word is hard-cut', () => {
+  const parts = splitMessage('x'.repeat(100), null, 30);
+  assert.equal(parts.length, 4);
+  assert.ok(parts.every((p) => p.text.length <= 30));
+});
+
+test('formatting follows its text across a split', () => {
+  const r = parseMarkup('plain words here. [b]bold words after[/b]');
+  const parts = splitMessage(r.text, r.fmt, 20);
+  const bold = parts.find((p) => p.fmt && p.fmt.some(([, f]) => f === F.BOLD));
+  assert.ok(bold);
+  for (const p of parts) {
+    if (p.fmt) assert.equal(p.fmt.reduce((n, [len]) => n + len, 0), p.text.length);
+  }
+});
+
+test('sliceFmt returns null when the slice is plain', () => {
+  assert.equal(sliceFmt([[3, 0, null], [3, 1, null]], 0, 3), null);
+  assert.deepEqual(sliceFmt([[3, 0, null], [3, 1, null]], 2, 5), [[1, 0, null], [2, 1, null]]);
+});
