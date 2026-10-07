@@ -15,8 +15,7 @@
     {
       "binding": "DB",
       "database_name": "comic-guestbook",
-      // Replace with the id printed by `npx wrangler d1 create comic-guestbook`.
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "9df04b2c-2f3c-4592-a723-92f73e2097ce",
       "migrations_dir": "migrations"
     }
   ],
